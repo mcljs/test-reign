@@ -18,7 +18,7 @@ function Card({notes,distance,favourites,addFav,removeFav}) {
               {notes.author}
             </h3>
           </div>
-          <p className='mt-1 text-gray-500 text-[14px] font-medium truncate'>
+          <p className='mt-1 text-[#6b6b6b] text-[14px] font-medium truncate'>
             {notes.story_title}
           </p>
         </Link>
