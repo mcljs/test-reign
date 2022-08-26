@@ -75,6 +75,7 @@ function Home() {
 
   useEffect(() => {
     getData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected, currentPage, data?.page]);
 
   const addFav = (id) => {
