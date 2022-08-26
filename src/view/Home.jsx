@@ -183,6 +183,15 @@ function Home() {
                   </div>
                 )}
               </ul>
+              <div className='flex justify-center my-20'>
+                <Pagination
+                  goToPreviousPage={goToPreviousPage}
+                  points={points}
+                  changePage={changePage}
+                  currentPage={currentPage}
+                  goToNextPage={goToNextPage}
+                />
+              </div>
             </Tab.Panel>
             <Tab.Panel>
               <ul className='mt-9 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2'>
@@ -207,15 +216,6 @@ function Home() {
             </Tab.Panel>
           </Container>
         </Tab.Panels>
-        <div className='flex justify-center my-20'>
-          <Pagination
-            goToPreviousPage={goToPreviousPage}
-            points={points}
-            changePage={changePage}
-            currentPage={currentPage}
-            goToNextPage={goToNextPage}
-          />
-        </div>
       </Tab.Group>
     </div>
   );
