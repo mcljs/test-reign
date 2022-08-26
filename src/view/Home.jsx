@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Tab } from "@headlessui/react";
-
 import clsx from "clsx";
 import Container from "../components/Container";
 import SelectMenu from "../components/SelectMenu";
-import TimeIcon from "../Icons/TimeIcon";
 import apiService from "../services/apiService";
 import { formatDistance } from "date-fns";
-import Link from "../components/Link";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/solid";
-import FavoriteIcon from "../Icons/FavoriteIcon";
-import FavoriteOutlineIcon from "../Icons/FavoriteOutlineIcon";
 import useMediaQuery from "../hooks/useMediaQuery";
+import Spinner from "../components/Spinner";
+import Card from "../components/Card";
+import Pagination from "../components/Pagination";
 
 function Home() {
   const select = [
@@ -40,13 +37,12 @@ function Home() {
   ];
   const [data, setData] = useState([]);
   const [selected, setSelected] = useState(select[1]);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [numberOfPages, setNumberOfPages] = useState(0);
+  const [isLoaded, setisLoaded] = useState(false);
   const [favourites, setFavourites] = useState(
     JSON.parse(localStorage.getItem("favourites")) || []
   );
-  console.log(currentPage);
-
   function goToNextPage() {
     setCurrentPage((page) => page + 1);
   }
@@ -71,6 +67,7 @@ function Home() {
       );
       setData(dataResponse.data);
       setNumberOfPages(dataResponse.data.nbPages);
+      setisLoaded(true);
     } catch (err) {
       console.error(err);
     }
@@ -92,12 +89,8 @@ function Home() {
     ];
     setFavourites(newFavourites);
   };
-  const pageNumbers = [];
-  for (let i = 1; i <= Math.ceil(numberOfPages); i++) {
-    pageNumbers.push(i);
-  }
 
-  const numberLimit = useMediaQuery('(min-width: 1024px)') ? 10 : 4;
+  const numberLimit = useMediaQuery("(min-width: 1024px)") ? 10 : 4;
   let startPoint = 1;
   let endPoint = numberLimit;
   if (numberLimit > numberOfPages) {
@@ -116,9 +109,6 @@ function Home() {
   for (var i = startPoint; i <= endPoint; i++) {
     points.push(i);
   }
-
-  console.log(data);
-  console.log(numberOfPages);
 
   return (
     <div className='text-2xl mt-[78px]'>
@@ -160,59 +150,37 @@ function Home() {
             </div>
 
             <Tab.Panel>
-              <ul className='mt-9 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2'>
-                {data?.hits?.map((notes, i) => {
-                  const createdAt = notes.created_at;
-                  const timestamp = createdAt ? new Date(createdAt) : "";
-                  const distance = formatDistance(Date.now(), timestamp, {
-                    addSuffix: true,
-                  });
-                  return (
-                    <li
-                      key={i}
-                      className='col-span-1 bg-white rounded-lg shadow hover:opacity-[.4]'
-                    >
-                      <div className='w-full flex items-center justify-between space-x-6'>
-                        <Link
-                          href={notes.story_url}
-                          className='flex-1 truncate px-4'
-                        >
-                          <div className='flex items-center space-x-3'>
-                            <TimeIcon className='w-4 ml-1' />
-                            <h3 className='text-[#767676] text-[11px] hover:opacity-[.5]'>
-                              {distance.substring(
-                                distance.indexOf(distance.match(/\d+/g))
-                              )}{" "}
-                              by {notes.author}
-                            </h3>
-                          </div>
-                          <p className='mt-1 text-gray-500 text-[14px] font-medium truncate'>
-                            {notes.story_title}
-                          </p>
-                        </Link>
-                        <div className='bg-[#606060]/[.06]  flex-shrink-0 py-6 px-4'>
-                          {!favourites.some(
-                            (found) => found.objectID === notes.objectID
-                          ) ? (
-                            <b
-                              className='cursor-pointer'
-                              onClick={() => addFav(notes)}
-                            >
-                              <FavoriteOutlineIcon className='w-6' />
-                            </b>
-                          ) : (
-                            <b
-                              className='cursor-pointer'
-                              onClick={() => removeFav(notes)}
-                            >
-                              <FavoriteIcon className='w-6' />
-                            </b>
-                          )}
-                        </div>
-                      </div>
-                    </li>
-                  );
-                })}
+              <ul
+                className={clsx(
+                  "mt-9 grid grid-cols-1 gap-6 sm:grid-cols-2",
+                  isLoaded ? "lg:grid-cols-2" : "lg:grid-cols-1"
+                )}
+              >
+                {isLoaded ? (
+                  data?.hits?.map((notes, i) => {
+                    const createdAt = notes.created_at;
+                    const timestamp = createdAt ? new Date(createdAt) : "";
+                    const distance = formatDistance(Date.now(), timestamp, {
+                      addSuffix: true,
+                    });
+                    return (
+                      <Card
+                        key={i}
+                        notes={notes}
+                        distance={distance}
+                        favourites={favourites}
+                        addFav={addFav}
+                        removeFav={removeFav}
+                      />
+                    );
+                  })
+                ) : (
+                  <div className='min-h-full pt-16 pb-12 flex flex-col bg-white justify-center'>
+                    <div className='py-16 flex justify-center'>
+                      <Spinner />
+                    </div>
+                  </div>
+                )}
               </ul>
             </Tab.Panel>
             <Tab.Panel>
@@ -223,52 +191,15 @@ function Home() {
                   const distance = formatDistance(Date.now(), timestamp, {
                     addSuffix: true,
                   });
-
-                  //console.log( notes.story_title, "notes.story_title");
                   return (
-                    <li
+                    <Card
                       key={i}
-                      className='col-span-1 bg-white rounded-lg shadow hover:opacity-[.4]'
-                    >
-                      <div className='w-full flex items-center justify-between space-x-6'>
-                        <Link
-                          href={notes.story_url}
-                          className='flex-1 truncate px-4'
-                        >
-                          <div className='flex items-center space-x-3'>
-                            <TimeIcon className='w-4 ml-1' />
-                            <h3 className='text-[#767676] text-[11px]'>
-                              {distance.substring(
-                                distance.indexOf(distance.match(/\d+/g))
-                              )}{" "}
-                              by {notes.author}
-                            </h3>
-                          </div>
-                          <p className='mt-1 text-gray-500 text-[14px] font-medium truncate'>
-                            {notes.story_title}
-                          </p>
-                        </Link>
-                        <div className='bg-[#606060]/[.06]  flex-shrink-0 py-6 px-4'>
-                          {!favourites.some(
-                            (found) => found.objectID === notes.objectID
-                          ) ? (
-                            <b
-                              className='cursor-pointer'
-                              onClick={() => addFav(notes)}
-                            >
-                              <FavoriteOutlineIcon className='w-6' />
-                            </b>
-                          ) : (
-                            <b
-                              className='cursor-pointer'
-                              onClick={() => removeFav(notes)}
-                            >
-                              <FavoriteIcon className='w-6' />
-                            </b>
-                          )}
-                        </div>
-                      </div>
-                    </li>
+                      notes={notes}
+                      distance={distance}
+                      favourites={favourites}
+                      addFav={addFav}
+                      removeFav={removeFav}
+                    />
                   );
                 })}
               </ul>
@@ -276,43 +207,13 @@ function Home() {
           </Container>
         </Tab.Panels>
         <div className='flex justify-center my-20'>
-          <nav
-            className='relative z-0 inline-flex rounded-md shadow-sm -space-x-px'
-            aria-label='Pagination'
-          >
-            <button
-              type='button'
-              onClick={goToPreviousPage}
-              className='relative inline-flex items-center px-2 mx-2 py-2 rounded-md border border-[#d9d9d9] bg-white text-sm  text-gray-500 hover:bg-gray-50 '
-            >
-              <ChevronLeftIcon className=' h-5 w-5 ' aria-hidden='true' />
-            </button>
-            <div>
-              {points?.map((number, i) => {
-                return (
-                  <button
-                    key={i}
-                    type='button'
-                    onClick={number !== "..." ? changePage : () => {}}
-                    className={`relative inline-flex items-center px-2 mx-2 py-2 rounded-md border border-[#d9d9d9] bg-white text-sm  text-gray-500 hover:bg-gray-50 ${
-                      number === currentPage ? "bg-[#1890ff] text-white" : ""
-                    }`}
-                  >
-                    {number}
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              type='button'
-              onClick={goToNextPage}
-              className='relative inline-flex items-center px-2 py-2 rounded-md border mx-2  border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 '
-            >
-              <span className='sr-only'>Next</span>
-              <ChevronRightIcon className='h-5 w-5' aria-hidden='true' />
-            </button>
-          </nav>
+          <Pagination
+            goToPreviousPage={goToPreviousPage}
+            points={points}
+            changePage={changePage}
+            currentPage={currentPage}
+            goToNextPage={goToNextPage}
+          />
         </div>
       </Tab.Group>
     </div>
