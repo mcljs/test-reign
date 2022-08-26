@@ -13,7 +13,7 @@ The application has a modular architecture, they are in charge of carrying out a
 | axios                            | ^0.72.2     | https://axios-http.com/docs/intro                     |
 | clsx                             | ^1.2.1      | https://www.npmjs.com/package/clsx                    |
 | @headlessui/react                | ^1.6.6      | https://headlessui.com/                               |
-| @heroicons/react                 | ^1.0.6      | hhttps://heroicons.com/                               |
+| @heroicons/react                 | ^1.0.6      | https://heroicons.com/                               |
 | date-fns                         | ^2.29.2     | https://momentjs.com/                                 |
 
 
